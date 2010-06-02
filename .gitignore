@@ -1,2 +1,6 @@
 *.o
-*.exe
+*anjuta*
+index
+index.exe
+cscope*
+filelist.txt
