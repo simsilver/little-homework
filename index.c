@@ -31,7 +31,17 @@ typedef struct index_tree
     struct index_tree *right;
 } IndexTree_T;
 
+typedef enum
+{
+    TRAVEL_FIRST,
+    TRAVEL_MIDDLE,
+    TRAVEL_LAST,
+    TRAVEL_TYPE_MAX
+} TravelType_E;
+
 typedef int (*CompareFunc) (void *, void *);
+typedef int (*TravelFunc) (IndexTree_T *);
+
 char initals[] = "aoeiuvbpmfdtnlgkhjqxzcs";
 char *default_file = "filelist.txt";
 int get_pinyin (char *buf, int count)
@@ -86,6 +96,38 @@ int print_table (FILE * fp)
     return 0;
 }
 
+int free_node (IndexTree_T * cur)
+{
+    if (NULL != cur)
+    {
+        if (NULL != cur->key.data)
+        {
+            assert (cur->key.len != 0);
+            free (cur->key.data);
+        }
+        cur->left = NULL;
+        cur->right = NULL;
+        free (cur);
+        return 0;
+    }
+    return 1;
+}
+
+int display_node (IndexTree_T * cur)
+{
+    if (NULL != cur)
+    {
+        printf ("%d,", cur->index);
+        if (NULL != cur->key.data)
+        {
+            assert (cur->key.len != 0);
+            printf ("%s\n", cur->key.data);
+        }
+        return 0;
+    }
+    return 1;
+}
+
 int compare_name (IndexTree_T * first, IndexTree_T * second)
 {
     int i = 0;
@@ -107,20 +149,30 @@ int compare_name (IndexTree_T * first, IndexTree_T * second)
     return 0;
 }
 
-int travel_tree (IndexTree_T * node)
+int travel_tree (IndexTree_T * node, TravelFunc func, TravelType_E type)
 {
     if (NULL != node)
     {
+        if (TRAVEL_FIRST == type)
+        {
+            func (node);
+        }
         if (NULL != node->left)
         {
-            travel_tree (node->left);
+            travel_tree (node->left, func, type);
         }
-        printf ("%5d\t", node->index);
+        if (TRAVEL_MIDDLE == type)
+        {
+            func (node);
+        }
         if (NULL != node->right)
         {
-            travel_tree (node->right);
+            travel_tree (node->right, func, type);
         }
-        printf ("\n");
+        if (TRAVEL_LAST == type)
+        {
+            func (node);
+        }
         return 0;
     }
     return 1;
@@ -231,7 +283,8 @@ int main (int argc, char **argv)
     generate_table (outfile, maxfile);
     print_table (outfile);
     root = simple_GetTree (outfile, (CompareFunc) compare_name);
-    travel_tree (root);
     fclose (outfile);
+    travel_tree (root, display_node, TRAVEL_MIDDLE);
+    travel_tree (root, free_node, TRAVEL_LAST);
     return 0;
 }
