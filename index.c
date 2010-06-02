@@ -17,10 +17,16 @@ typedef struct file_name
     char append[APPEND_LEN];
 } FileName_T;
 
+typedef struct other_data
+{
+    int len;
+    char *data;
+} DATA_T;
+
 typedef struct index_tree
 {
     int index;
-    char *key;
+    DATA_T key;
     struct index_tree *left;
     struct index_tree *right;
 } IndexTree_T;
@@ -73,7 +79,8 @@ int print_table (FILE * fp)
     fread (file_table, sizeof (FileName_T), count, fp);
     for (i = 0; i * sizeof (FileName_T) < len; i++)
     {
-        printf ("%d - %s.%s\n", file_table[i].index, file_table[i].name, file_table[i].append);
+        printf ("%d - %s.%s\n", file_table[i].index, file_table[i].name,
+                file_table[i].append);
     }
     free (file_table);
     return 0;
@@ -86,14 +93,16 @@ int compare_name (IndexTree_T * first, IndexTree_T * second)
     assert (NULL != second);
     do
     {
-        if (first->key[i] > second->key[i])
+        if (first->key.data[i] > second->key.data[i])
             return 1;
-        else if (first->key[i] < second->key[i])
+        else if (first->key.data[i] < second->key.data[i])
             return -1;
-        else if ((first->key[i] == 0) && (first->key[i] == second->key[i]))
+        else if ((first->key.data[i] == 0)
+                 && (first->key.data[i] == second->key.data[i]))
             return 0;
+        i++;
     }
-    while (i++);
+    while ((i <= first->key.len) && (i <= second->key.len));
 
     return 0;
 }
@@ -168,13 +177,14 @@ IndexTree_T *simple_GetTree (FILE * fp, CompareFunc func)
     }
     memset (root, 0, sizeof (IndexTree_T));
     root->index = filename.index;
-    root->key = malloc (strlen (filename.name) + 1);
-    if (NULL == root->key)
+    root->key.len = strlen (filename.name) + 1;
+    root->key.data = malloc (root->key.len);
+    if (NULL == root->key.data)
     {
         free (root);
         return NULL;
     }
-    strcpy (root->key, filename.name);
+    memcpy (root->key.data, filename.name, root->key.len);
     while (fread (&filename, sizeof (FileName_T), 1, fp))
     {
         IndexTree_T *cur = malloc (sizeof (IndexTree_T));
@@ -184,13 +194,14 @@ IndexTree_T *simple_GetTree (FILE * fp, CompareFunc func)
         }
         memset (cur, 0, sizeof (IndexTree_T));
         cur->index = filename.index;
-        cur->key = malloc (strlen (filename.name) + 1);
-        if (NULL == cur->key)
+        cur->key.len = strlen (filename.name) + 1;
+        cur->key.data = malloc (cur->key.len);
+        if (NULL == cur->key.data)
         {
             free (cur);
             break;
         }
-        strcpy (cur->key, filename.name);
+        memcpy (cur->key.data, filename.name, cur->key.len);
 
         simple_insert (root, cur, func);
     }
@@ -210,12 +221,12 @@ int main (int argc, char **argv)
         {
             maxfile = DEFAULT_MAX_FILE;
         }
-        if ((argc >= 3)&&!(filename = argv[2]))
+        if ((argc >= 3) && !(filename = argv[2]))
         {
             filename = default_file;
         }
     }
-	srandom(time(NULL));
+    srandom (time (NULL));
     outfile = fopen (filename, "w+");
     generate_table (outfile, maxfile);
     print_table (outfile);
