@@ -1,0 +1,22 @@
+#! /bin/sh
+# Usage: ./loworup.sh <-l | -u> <target_directory>
+
+#
+# 第二形参是目录，第一形参用-l或-u指定转至小写或大写
+#
+if [ $# -ne 2 ] ; then
+	echo "Usage: ${0} <-l | -u> <target_directory>"
+	exit 1
+fi
+
+if [ ! -d ${2} -o "${1}" != "-l" -a "${1}" != "-u" ] ; then
+	echo "Usage: ${0} <-l | -u> <target_directory>"
+	exit 1
+fi
+
+if [ "${1}" = "-u" ] ; then
+	find "${2}" -depth -exec sh -c 'newbasename=`basename "${0}"|tr [:lower:] [:upper:]`;newdirname=`dirname "${0}"`;newname="${newdirname}/${newbasename}";if [ "${newname}" != "${0}" -a "." != "${0}" ]; then mv -v "${0}" "${newname}"; fi' {} \;
+else
+	find "${2}" -depth -exec sh -c 'newbasename=`basename "${0}"|tr [:upper:] [:lower:]`;newdirname=`dirname "${0}"`;newname="${newdirname}/${newbasename}";if [ "${newname}" != "${0}" -a "." != "${0}" ]; then mv -v "${0}" "${newname}"; fi' {} \;
+fi
+

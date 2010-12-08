@@ -1,0 +1,39 @@
+#!/bin/bash
+ 
+# Convert the ape/flac files(splited) to ogg format.
+# 01.a.flac, 02.xy.flac,... -&gt; 01.a.ogg, 02.xy.ogg, ...
+#
+# ;-) vvoody
+ 
+if [ "$1" == "--help" ]; then
+    echo "Usage: $0 your.cue orig_format"
+    exit 1
+fi
+ 
+cuefile=$1
+ext=$2
+ 
+count=1
+for f in *.${ext}; do
+    artist=$(cueprint -n$count -t '%p' "$cuefile")
+    album=$(cueprint -n$count -t '%T' "$cuefile")
+    tracknum=$(cueprint -n$count -t '%02n' "$cuefile")
+    title=$(cueprint -n$count -t '%t' "$cuefile")
+	tracks=$(cueprint -d '%N' "$cuefile")
+	genre=$(cueprint -d '%G' "$cuefile")
+ 
+    shntool conv -i $ext -o 'cust ext=ogg oggenc - -o %f -q7' "$f"
+ 
+    oggfile="$(basename "$f" ".$ext").ogg"
+    echo "$oggfile"
+	vorbiscomment -aR \
+		-t "Artist=$artist" \
+		-t "Album=$album" \
+		-t "Title=$title" \
+		-t "Genre=$genre" \
+		-t "totaltracks=$tracks" \
+		-t "tracknumber=$tracknum" \
+		"$oggfile"
+
+    count=$[$count + 1]
+done
