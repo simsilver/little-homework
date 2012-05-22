@@ -1,0 +1,70 @@
+#!/bin/sh
+file=/sys/kernel/debug/vgaswitcheroo/switch
+
+VgaSwitchTo ()
+{
+	# check power status
+	grep "Pwr" $file | grep "$1" >/dev/null
+	ret=$?
+	if [ 0 -ne $ret ] ; then
+#		echo "Debug:[PowerStatus Check] $1 Power Status Off, Turn on"
+		echo ON > $file
+#	else
+#		echo "Debug:[PowerStatus Check] $1 Power Status On"
+	fi
+
+	# confirm power status
+	grep "Pwr" $file | grep "$1" >/dev/null
+	ret=$?
+	if [ 0 -ne $ret ] ; then
+		echo "Error: $1 Power Status Off, Turn on failed"
+		return 1
+#	else
+#		echo "Debug:[PowerStatus Confirm] $1 Power Status On"
+	fi
+
+	# set active device
+	echo "$1" > $file
+
+	# check active stauts and Power off deactived device
+	grep "+" $file | grep "$1" >/dev/null
+	ret=$?
+	if [ 0 -eq $ret ] ; then
+#		echo "Debug:[ShutDown Prompt] Turn off other devices"
+		echo OFF > $file
+	else
+		echo "Error: Set active device $1 failed" 
+		return 1
+	fi
+
+	# confirm other device turned off
+	grep "Pwr" $file | grep -v "$1" >/dev/null
+	ret=$?
+	if [ 0 -eq $ret ] ; then
+		echo "Error: Other device is still Powered"
+		return 1
+#	else
+#		echo "Debug:[PowerStatus Confirm] Others are shutdown"
+	fi
+
+#	echo "Debug: cat $file" &&  cat $file
+
+	return 0
+}
+
+if [ -f $file ] ; then
+	case "$1" in 
+		IGD) 
+			;&
+		DIS)
+			VgaSwitchTo $1
+			;;
+		*) 	
+			echo "Usage:"
+			echo "	`basename $0` IGD|DIS"
+			;;
+	esac
+else
+	echo "can't set $1 when $file not exist"
+fi
+
