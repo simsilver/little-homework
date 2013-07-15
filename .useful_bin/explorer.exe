@@ -1,0 +1,10 @@
+#!/bin/bash
+
+unixpath=`winepath -u $@`
+if [ -d $unixpath ]; 
+then
+	exec nautilus $unixpath;
+elif [ -f $unixpath ];
+then
+	exec gedit $unixpath;
+fi
