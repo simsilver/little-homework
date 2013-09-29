@@ -3,8 +3,17 @@
 unixpath=`winepath -u $@`
 if [ -d $unixpath ]; 
 then
-	exec nautilus $unixpath;
+	cd $unixpath;
+	physicpath=`pwd -P`;
+	cd -;
+	exec nautilus $physicpath;
 elif [ -f $unixpath ];
 then
-	exec gedit $unixpath;
+	dir=`dirname $unixpath`;
+	file=`basename $unixpath`;
+	cd $dir;
+	phydir=`pwd -P`;
+	cd -;
+	phypath=${phydir}/${file};
+	exec gedit $phypath;
 fi
