@@ -1,19 +1,11 @@
 #!/bin/bash
 
 unixpath=`winepath -u $@`
+physicpath=`readlink -f $unixpath`
 if [ -d $unixpath ]; 
 then
-	cd $unixpath;
-	physicpath=`pwd -P`;
-	cd -;
 	exec nautilus $physicpath;
 elif [ -f $unixpath ];
 then
-	dir=`dirname $unixpath`;
-	file=`basename $unixpath`;
-	cd $dir;
-	phydir=`pwd -P`;
-	cd -;
-	phypath=${phydir}/${file};
-	exec gedit $phypath;
+	exec gedit $physicpath;
 fi
