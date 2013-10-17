@@ -1,11 +1,11 @@
 #!/bin/bash
 
-unixpath=`winepath -u $@`
-physicpath=`readlink -f $unixpath`
-if [ -d $unixpath ]; 
+unixpath=`winepath -u "$@"`
+physicpath=`readlink -f "$unixpath"`
+if [ -d "$physicpath" ]; 
 then
-	exec nautilus $physicpath;
-elif [ -f $unixpath ];
+	exec nautilus "$physicpath";
+elif [ -f "$physicpath" ];
 then
-	exec gedit $physicpath;
+	exec gedit "$physicpath";
 fi
