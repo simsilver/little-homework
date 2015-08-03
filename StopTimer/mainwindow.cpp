@@ -3,7 +3,7 @@
 
 #include <QFile>
 #include <QTimer>
-#include <QStandardPaths>
+#include <QDir>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -63,7 +63,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 }
 
 void MainWindow::saveToFile() {
-    QFile *file = new QFile(QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) +"/stopWatch.txt");
+    QFile *file = new QFile(QDir::homePath() +"/stopWatch.txt");
     file->open(QFile::Truncate|QFile::WriteOnly);
     if(list) {
         for(int i = 0; i < list->count(); i++) {
