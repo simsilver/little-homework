@@ -6,3 +6,4 @@ index.exe
 cscope*
 filelist.txt
 tags
+*.user
