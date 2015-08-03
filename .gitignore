@@ -7,3 +7,5 @@ cscope*
 filelist.txt
 tags
 *.user
+.idea/
+*.iml
