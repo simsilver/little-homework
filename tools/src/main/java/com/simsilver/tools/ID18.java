@@ -1,5 +1,10 @@
 package com.simsilver.tools;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Random;
@@ -7,6 +12,7 @@ import java.util.Random;
 public class ID18 {
     static int[] weight = {7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2};    //十七位数字本体码权重
     static char[] validate = {'1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'};    //mod11,对应校验码字符值
+
 
     public static char getValidateCode(String id17) {
         int sum = 0;
@@ -19,18 +25,45 @@ public class ID18 {
     }
 
     public static String checkValid(String id18) {
-        if(id18 == null || id18.length() != 18) {
+        if (id18 == null || id18.length() != 18) {
             return null;
         }
         String sub17Id = id18.substring(0, 17);
         char checkSum = ID18.getValidateCode(sub17Id);
-        if(checkSum == id18.charAt(17)) {
+        if (checkSum == id18.charAt(17)) {
             return id18;
         } else {
             return sub17Id + checkSum;
         }
     }
 
+    public static String genAreaCode() {
+        return null;
+    }
+
+    public static boolean checkAreaValid(String area) {
+        if (area == null || area.length() < 6) {
+            return false;
+        }
+        String areapart = area.substring(0, 6);
+        return true;
+    }
+
+    public static void updateList() {
+        InputStream is = Utils.getZipFileStream("AreaCode");
+        try {
+            FileOutputStream outputStream = new FileOutputStream(new File(Utils.getPath("/"), "test.txt"));
+            byte[] cache = new byte[4096];
+            int size;
+            while((size = is.read(cache)) > 0) {
+                outputStream.write(cache,0,size);
+            }
+            is.close();
+            outputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     public static String generateValidID() {
         String province = "410";
         String city = "184";
@@ -41,7 +74,7 @@ public class ID18 {
         cal.roll(Calendar.DATE, rand.nextInt(30));
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
         String birthday = format.format(cal.getTime());
-        String order = String.format("%03d",rand.nextInt(999));
+        String order = String.format("%03d", rand.nextInt(999));
         String id17 = province + city + birthday + order;
         char checkSum = getValidateCode(id17);
         return id17 + checkSum;
@@ -49,17 +82,20 @@ public class ID18 {
 
     public static void main(String[] args) {
         switch (args.length) {
+            case 0:
+                updateList();
+                break;
             case 1:
                 String idNumber = args[0];
                 char checkSum;
-                switch (idNumber.length()){
+                switch (idNumber.length()) {
                     case 17:
                         checkSum = ID18.getValidateCode(idNumber);
                         Text.show("校验码： " + checkSum);
                         break;
                     case 18:
                         String validID = ID18.checkValid(idNumber);
-                        if(validID.equals(idNumber)) {
+                        if (validID.equals(idNumber)) {
                             Text.show("校验正确：" + idNumber);
                         } else {
                             Text.show("校验错误，应该为：" + validID);
