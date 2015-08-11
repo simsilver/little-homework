@@ -40,6 +40,13 @@ public class Utils {
     }
 
     public static String getPath(String path) {
+        ClassLoader cl = Utils.class.getClassLoader();
+        if(cl != null) {
+            URL url = cl.getResource(path);
+            if(url != null) {
+                return url.getPath();
+            }
+        }
         return Utils.class.getResource(path).getPath();
     }
 
