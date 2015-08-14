@@ -31,10 +31,7 @@ public class DictionaryTest extends TestCase {
         super.setUp();
         dict = new Dictionary();
         mRandom = new Random(System.nanoTime());
-        mDataFile = new File(Utils.getPath("/"), "AreaCode.txt");
-        if(!mDataFile.exists()) {
-            mDataFile = new File(Utils.getPath("/AreaCode.txt"));
-        }
+        mDataFile = new File(Utils.getPath("AreaCode.txt"));
     }
 
     @Override

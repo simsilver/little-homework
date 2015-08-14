@@ -3,6 +3,8 @@ package com.simsilver.tools;
 import com.sun.nio.zipfs.ZipFileSystem;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -41,23 +43,27 @@ public class Utils {
 
     public static String getPath(String path) {
         ClassLoader cl = Utils.class.getClassLoader();
+        String GotPath = null;
         if(cl != null) {
             URL url = cl.getResource(path);
             if(url != null) {
-                return url.getPath();
+                GotPath = url.getPath();
+            }
+        } else {
+            URL url = Utils.class.getResource(path);
+            if (url != null) {
+                GotPath = url.getPath();
             }
         }
-        return Utils.class.getResource(path).getPath();
+        System.out.println(GotPath);
+        return GotPath;
     }
 
     public static ZipFile getDataArchive() {
         if (mZipArchive != null) {
             return mZipArchive;
         } else {
-            File dataArchiveFile = new File(getPath("/"), dataArchiveName);
-            if (!dataArchiveFile.exists()) {
-                dataArchiveFile = new File(getPath("/" + dataArchiveName));
-            }
+            File dataArchiveFile = new File(getPath(dataArchiveName));
             if(dataArchiveFile.exists()) {
                 try {
                     mZipArchive = new ZipFile(dataArchiveFile);
@@ -81,6 +87,16 @@ public class Utils {
         }
     }
     public static InputStream getZipFileStream(String fileName) {
+        String path = Utils.getPath(fileName);
+        if(path == null) {
+            path = Utils.getPath("AreaCode2.txt");
+        }
+        File dFile = new File(path);
+        try {
+            return new FileInputStream(dFile);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
         try {
             ZipFile file = getDataArchive();
             ZipEntry targetFile = file.getEntry(fileName);
