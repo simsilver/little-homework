@@ -44,9 +44,9 @@ public class Utils {
     public static String getPath(String path) {
         ClassLoader cl = Utils.class.getClassLoader();
         String GotPath = null;
-        if(cl != null) {
+        if (cl != null) {
             URL url = cl.getResource(path);
-            if(url != null) {
+            if (url != null) {
                 GotPath = url.getPath();
             }
         } else {
@@ -55,7 +55,6 @@ public class Utils {
                 GotPath = url.getPath();
             }
         }
-        System.out.println(GotPath);
         return GotPath;
     }
 
@@ -64,7 +63,7 @@ public class Utils {
             return mZipArchive;
         } else {
             File dataArchiveFile = new File(getPath(dataArchiveName));
-            if(dataArchiveFile.exists()) {
+            if (dataArchiveFile.exists()) {
                 try {
                     mZipArchive = new ZipFile(dataArchiveFile);
                 } catch (IOException e) {
@@ -76,7 +75,7 @@ public class Utils {
     }
 
     public static void closeDataArchive() {
-        if(mZipArchive != null) {
+        if (mZipArchive != null) {
             try {
                 mZipArchive.close();
             } catch (IOException e) {
@@ -86,21 +85,22 @@ public class Utils {
             }
         }
     }
-    public static InputStream getZipFileStream(String fileName) {
-        String path = Utils.getPath(fileName);
-        if(path == null) {
-            path = Utils.getPath("AreaCode2.txt");
-        }
-        File dFile = new File(path);
+
+    public static InputStream getDataFileStream(String fileName) {
         try {
-            return new FileInputStream(dFile);
+            String path = Utils.getPath("/");
+            File dFile = new File(path, fileName);
+            if (dFile.exists()) {
+                return new FileInputStream(dFile);
+            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+
         try {
             ZipFile file = getDataArchive();
             ZipEntry targetFile = file.getEntry(fileName);
-            return  file.getInputStream(targetFile);
+            return file.getInputStream(targetFile);
         } catch (Exception e) {
             e.printStackTrace();
         }

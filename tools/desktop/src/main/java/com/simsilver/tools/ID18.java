@@ -1,18 +1,24 @@
 package com.simsilver.tools;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Map;
 import java.util.Random;
 
 public class ID18 {
     static int[] weight = {7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2};    //十七位数字本体码权重
     static char[] validate = {'1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'};    //mod11,对应校验码字符值
+    static Dictionary mDict = null;
+    static Random mRand = null;
 
+    static {
+        mRand = new Random(Calendar.getInstance().getTimeInMillis());
+        updateList();
+    }
 
     public static char getValidateCode(String id17) {
         int sum = 0;
@@ -28,6 +34,10 @@ public class ID18 {
         if (id18 == null || id18.length() != 18) {
             return null;
         }
+        String add = checkAreaValid(id18.substring(0,6));
+        if(add == null){
+            return null;
+        }
         String sub17Id = id18.substring(0, 17);
         char checkSum = ID18.getValidateCode(sub17Id);
         if (checkSum == id18.charAt(17)) {
@@ -38,53 +48,57 @@ public class ID18 {
     }
 
     public static String genAreaCode() {
-        return null;
+        int size = mDict.size();
+        Map.Entry<String, String> entry = mDict.getEntry(mRand.nextInt(size));
+        return entry.getKey();
     }
 
-    public static boolean checkAreaValid(String area) {
+    public static String checkAreaValid(String area) {
         if (area == null || area.length() < 6) {
-            return false;
+            return null;
         }
-        String areapart = area.substring(0, 6);
-        return true;
+        String areaPart = area.substring(0, 6);
+        String[] areaAddress = mDict.getValue(areaPart);
+        if(areaAddress == null) {
+            return null;
+        }
+        return areaAddress[0];
     }
 
     public static void updateList() {
-        InputStream is = Utils.getZipFileStream("AreaCode");
+        InputStream is = Utils.getDataFileStream("AreaCode");
+        if (mDict == null) {
+            mDict = new Dictionary();
+        } else {
+            mDict.reset();
+        }
         try {
-            FileOutputStream outputStream = new FileOutputStream(new File(Utils.getPath("/"), "test.txt"));
-            byte[] cache = new byte[4096];
-            int size;
-            while((size = is.read(cache)) > 0) {
-                outputStream.write(cache,0,size);
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                String[] data = line.split(" ");
+                mDict.insert(data[0], data[1]);
             }
-            is.close();
-            outputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
     public static String generateValidID() {
-        String province = "410";
-        String city = "184";
         Calendar cal = Calendar.getInstance();
-        Random rand = new Random(cal.getTimeInMillis());
-        cal.add(Calendar.YEAR, -38 + rand.nextInt(20));
-        cal.roll(Calendar.MONTH, rand.nextInt(12));
-        cal.roll(Calendar.DATE, rand.nextInt(30));
+        cal.add(Calendar.YEAR, -38 + mRand.nextInt(20));
+        cal.roll(Calendar.MONTH, mRand.nextInt(12));
+        cal.roll(Calendar.DATE, mRand.nextInt(30));
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
         String birthday = format.format(cal.getTime());
-        String order = String.format("%03d", rand.nextInt(999));
-        String id17 = province + city + birthday + order;
+        String order = String.format("%03d", mRand.nextInt(999));
+        String id17 = genAreaCode() + birthday + order;
         char checkSum = getValidateCode(id17);
         return id17 + checkSum;
     }
 
     public static void main(String[] args) {
         switch (args.length) {
-            case 0:
-                updateList();
-                break;
             case 1:
                 String idNumber = args[0];
                 char checkSum;

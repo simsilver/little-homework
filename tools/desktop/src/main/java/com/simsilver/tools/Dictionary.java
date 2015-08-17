@@ -5,7 +5,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -69,5 +72,18 @@ public class Dictionary {
             values[i] = mHashTable.get(key);
         }
         return values;
+    }
+
+    public Map.Entry<String, String> getEntry(int i) {
+        Set<Map.Entry<String, String>> entries = mHashTable.entrySet();
+        if(i < 0 || i > entries.size()) {
+            return null;
+        }
+        Iterator<Map.Entry<String, String>> iterator = entries.iterator();
+        while(i-- > 0 && iterator.hasNext()) {
+            iterator.next();
+        }
+        Map.Entry<String, String> entry = iterator.next();
+        return entry;
     }
 }
