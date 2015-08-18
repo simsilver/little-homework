@@ -2,6 +2,7 @@ package com.simsilver.tools;
 
 import com.sun.nio.zipfs.ZipFileSystem;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -93,10 +94,9 @@ public class Utils {
             if (dFile.exists()) {
                 return new FileInputStream(dFile);
             }
-        } catch (FileNotFoundException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
-
         try {
             ZipFile file = getDataArchive();
             ZipEntry targetFile = file.getEntry(fileName);
@@ -113,5 +113,31 @@ public class Utils {
         } catch (UnsupportedEncodingException e) {
             return "";
         }
+    }
+
+    public static byte[] readInputStream(InputStream in, int totalSize) throws IOException {
+
+        byte[] cache = new byte[totalSize];
+        int size;
+        if ((size = in.read(cache)) > 0) {
+            totalSize -= size;
+            if(totalSize != 0) {
+                throw new IOException("read stream size unexpected");
+            }
+        }
+        return cache;
+    }
+
+    public static byte[] readInputStream(InputStream in) throws IOException {
+
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        byte[] cache = new byte[4096];
+        int size;
+        while ((size = in.read(cache)) > 0) {
+            byteArrayOutputStream.write(cache, 0, size);
+        }
+        byte[] data = byteArrayOutputStream.toByteArray();
+        byteArrayOutputStream.close();
+        return data;
     }
 }
