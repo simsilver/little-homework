@@ -1,10 +1,14 @@
 package com.simsilver.connect;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 class MyThread extends Thread {
+    private static Logger logger = LoggerFactory.getLogger(MyThread.class);
     @Override
     public void run() {
         Random rand = new Random(System.nanoTime());
@@ -29,13 +33,13 @@ class MyThread extends Thread {
                         rand.nextBytes(data);
                         byte[] dataRet = ConnectDist.send(data, 5000);
                         if(dataRet == null) {
-                            System.out.println("Thread Quit for send Error");
+                            logger.warn("Thread Quit for send Error");
                             breakMark = true;
                             break;
                         }
                         int len2 = Integer.parseInt(new String(dataRet));
                         if (len != len2) {
-                            System.out.println("Thread Quit for Error Data");
+                            logger.warn("Thread Quit for Error Data");
                             breakMark = true;
                         }
                         break;
@@ -49,7 +53,7 @@ class MyThread extends Thread {
                 breakMark = false;
                 Thread.sleep(rand.nextInt(2000));
             } catch (Exception e) {
-                System.out.println("Thread " + getId() + " exception " + e.getMessage());
+                logger.warn("Thread " + getId() + " exception " + e.getMessage());
                 break;
             }
         }

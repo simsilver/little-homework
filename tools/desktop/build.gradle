@@ -1,19 +1,9 @@
 apply plugin: 'application'
 
-compileJava.options.encoding = 'UTF-8'
-compileTestJava.options.encoding = 'UTF-8'
-
 version = '1.0'
 
 mainClassName = "com.simsilver.tools.ID18"
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    compile fileTree(dir: '../libs', include: ['*.jar'])
-    compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.github.stefanbirkner:system-rules:1.12.1'
-}
-
-jar {
-    manifest.attributes provider: 'gradle'
 }

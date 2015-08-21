@@ -2,6 +2,9 @@ package com.simsilver.connect;
 
 import com.simsilver.tools.Utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -22,6 +25,8 @@ public class Message {
     public final int mType;
     private long mThreadID;
     private static long mStaticID;
+
+    private static Logger logger = LoggerFactory.getLogger(Message.class);
 
     private Message(long id, int type, byte[] data) {
         mID = id;
@@ -67,7 +72,7 @@ public class Message {
 
     public Message replyMsg() {
         Message msg;
-        System.out.println("Coming Thread " + mThreadID + " MSG");
+        logger.trace("Coming Thread {} MSG", mThreadID);
         switch (mType) {
             case RESERVED_HEART_BEAT_ID:
                 msg = new Message(mID, RESERVED_ANS_HB_ID, Calendar.getInstance().getTime().toString().getBytes());

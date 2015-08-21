@@ -49,8 +49,7 @@ public class ConnectDist {
                     while ((msg = mSendQueue.poll()) != null) {
                         try {
                             msg.sendToOutputStream(out);
-                            Thread.sleep(20);
-                        } catch (IOException | InterruptedException e) {
+                        } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }
@@ -68,7 +67,6 @@ public class ConnectDist {
                             Message msg = Message.obtainFromInputStream(in);
                             mReadQueue.put(msg);
                         }
-                        Thread.sleep(20);
                     } catch (IOException | InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -87,11 +85,6 @@ public class ConnectDist {
                         synchronized (obj) {
                             obj.notify();
                         }
-                    }
-                    try {
-                        Thread.sleep(20);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
                     }
                 }
             }
@@ -140,7 +133,7 @@ public class ConnectDist {
     }
 
     public static void main(String[] args) {
-        int threadNum = 500;
+        int threadNum = 200;
         boolean alive = true;
         Thread[] mThreadList = new Thread[threadNum];
         for (int i = 0; i < threadNum; i++) {

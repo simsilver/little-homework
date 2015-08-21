@@ -97,6 +97,7 @@ public class ID18 {
         return id17 + checkSum;
     }
 
+
     public static void main(String[] args) {
         switch (args.length) {
             case 1:

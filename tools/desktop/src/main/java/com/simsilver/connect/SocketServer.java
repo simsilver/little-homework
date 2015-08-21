@@ -1,5 +1,8 @@
 package com.simsilver.connect;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -10,8 +13,10 @@ import java.util.concurrent.TimeUnit;
 public class SocketServer {
     public static final int PORT = 8888;//监听的端口号
 
+    private static Logger logger = LoggerFactory.getLogger(SocketServer.class);
+
     public static void main(String[] args) {
-        System.out.println("服务器启动...\n");
+        logger.trace("服务器启动...\n");
         SocketServer server = new SocketServer();
         server.init();
     }
@@ -22,12 +27,12 @@ public class SocketServer {
             while (true) {
                 // 一旦有堵塞, 则表示服务器与客户端获得了连接
                 Socket client = serverSocket.accept();
-                System.out.println("Server: socket in, hash " + client.hashCode());
+                logger.debug("Server: socket in, hash {}", client.hashCode());
                 // 处理这次连接
                 new HandlerThread(client);
             }
         } catch (Exception e) {
-            System.out.println("服务器异常: " + e.getMessage());
+            logger.warn("服务器异常: " + e.getMessage());
         }
     }
 
@@ -45,7 +50,7 @@ public class SocketServer {
         private boolean updateTimeStamp(boolean mark) {
             long now = System.nanoTime();
             if (now - lastActiveTimeStamp > waitTime) {
-                System.out.println("长连接超时 " + lastActiveTimeStamp + " " + now);
+                logger.warn("长连接超时 " + lastActiveTimeStamp + " " + now);
                 return false;
             }
             if (mark) {
@@ -73,19 +78,18 @@ public class SocketServer {
                         Message msg = Message.obtainFromInputStream(in);
                         Message msg2 = doMessage(msg);
                         msg2.sendToOutputStream(out);
-                        updateTimeStamp(true);
                     }
                     Thread.sleep(20);
                 }
             } catch (Exception e) {
-                System.out.println("服务器 run 异常: " + e.getMessage());
+                logger.warn("服务器 run 异常: " + e.getMessage());
             } finally {
                 if (socket != null) {
                     try {
                         socket.close();
                     } catch (Exception e) {
                         socket = null;
-                        System.out.println("服务端 finally 异常:" + e.getMessage());
+                        logger.warn("服务端 finally 异常:" + e.getMessage());
                     }
                 }
             }
