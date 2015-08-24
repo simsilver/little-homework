@@ -126,7 +126,7 @@ public class ConnectDist {
     public static void heartBeat() throws Exception {
         Message msg = Message.getHeartBeat();
         Message msg2 = send(msg, 2000);
-        if (msg2 != null && msg2.mType == Message.RESERVED_ANS_HB_ID) {
+        if (msg2 != null && msg2.mType == Message.TYPE.ANS_HEART_BEAT) {
             return;
         }
         throw new Exception("HEART BEAT ERROR");

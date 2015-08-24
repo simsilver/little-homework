@@ -37,7 +37,7 @@ public class SocketServer {
     }
 
     public Message doMessage(Message in) {
-        return in.replyMsg();
+        return in.replyMsg(new byte[0]);
     }
 
     private class HandlerThread implements Runnable {
@@ -79,7 +79,7 @@ public class SocketServer {
                         Message msg2 = doMessage(msg);
                         msg2.sendToOutputStream(out);
                     }
-                    Thread.sleep(20);
+                    Thread.sleep(0);
                 }
             } catch (Exception e) {
                 logger.warn("服务器 run 异常: " + e.getMessage());

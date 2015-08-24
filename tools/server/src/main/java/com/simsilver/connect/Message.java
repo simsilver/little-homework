@@ -9,26 +9,64 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.HashMap;
 
 /**
  *
  */
 public class Message {
-    public static final int MAX_RESERVED_ID = 1000;
-    public static final int MSG_NORMAL_MSG = 1001;
 
+    public enum TYPE {
+        HEART_BEAT(10),
+        ANS_HEART_BEAT(11),
+        MAX_RESERVED_TYPE(1000),
+        NORMAL(MAX_RESERVED_TYPE.ID + 1),
+        NORMAL2(selfInc()),
+        NORMAL3(selfInc()),
+        NORMAL4(selfInc()),
+        NORMAL5(selfInc());
 
-    public static final int RESERVED_HEART_BEAT_ID = 10;
-    public static final int RESERVED_ANS_HB_ID = 11;
+        public final int ID;
+        private static int mStaticID = NORMAL.ID;
+        private static HashMap<Integer, Integer> mMap;
+        private static TYPE[] mList;
+
+        static {
+            mMap = new HashMap<>();
+            mList = TYPE.values();
+            for (TYPE t : mList) {
+                mMap.put(t.ID, t.ordinal());
+            }
+        }
+
+        TYPE(int i) {
+            ID = i;
+            setInc(i);
+        }
+
+        public static int selfInc() {
+            return mStaticID + 1;
+        }
+
+        public static void setInc(int id) {
+            assert (id > mStaticID);
+            mStaticID = id;
+        }
+
+        public static TYPE getById(int id) {
+            return mList[mMap.get(id)];
+        }
+    }
+
     public final byte[] mData;
     public final long mID;
-    public final int mType;
+    public final TYPE mType;
     private long mThreadID;
     private static long mStaticID;
 
     private static Logger logger = LoggerFactory.getLogger(Message.class);
 
-    private Message(long id, int type, byte[] data) {
+    private Message(long id, TYPE type, byte[] data) {
         mID = id;
         mThreadID = Thread.currentThread().getId();
         mType = type;
@@ -37,7 +75,7 @@ public class Message {
 
     public static Message getHeartBeat() {
         String title = "Heart Beats at " + Calendar.getInstance().getTime().toString();
-        Message msg = new Message(increaseID(), RESERVED_HEART_BEAT_ID, title.getBytes());
+        Message msg = new Message(increaseID(), TYPE.HEART_BEAT, title.getBytes());
         msg.mThreadID = Thread.currentThread().getId();
         return msg;
     }
@@ -48,21 +86,21 @@ public class Message {
         long threadID = in.readLong();
         int len = in.readInt();
         byte[] data = Utils.readInputStream(in, len);
-        Message msg = new Message(id, type, data);
+        Message msg = new Message(id, TYPE.getById(type), data);
         msg.mThreadID = threadID;
         return msg;
     }
 
     public void sendToOutputStream(DataOutputStream out) throws IOException {
         out.writeLong(mID);
-        out.writeInt(mType);
+        out.writeInt(mType.ID);
         out.writeLong(mThreadID);
         out.writeInt(mData.length);
         out.write(mData);
     }
 
     public static Message obtainNormalMsg(byte[] data) {
-        Message msg2 = new Message(increaseID(), MSG_NORMAL_MSG, data);
+        Message msg2 = new Message(increaseID(), TYPE.NORMAL, data);
         return msg2;
     }
 
@@ -70,15 +108,14 @@ public class Message {
         return mStaticID++;
     }
 
-    public Message replyMsg() {
+    public Message replyMsg(byte[] data) {
         Message msg;
-        logger.trace("Coming Thread {} MSG", mThreadID);
         switch (mType) {
-            case RESERVED_HEART_BEAT_ID:
-                msg = new Message(mID, RESERVED_ANS_HB_ID, Calendar.getInstance().getTime().toString().getBytes());
+            case HEART_BEAT:
+                msg = new Message(mID, TYPE.ANS_HEART_BEAT, data);
                 break;
             default:
-                msg = new Message(mID, MSG_NORMAL_MSG, Integer.toString(mData.length).getBytes());
+                msg = new Message(mID, TYPE.NORMAL, data);
                 break;
         }
         return msg;
