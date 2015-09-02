@@ -27,14 +27,14 @@ public class Message {
         NORMAL5(selfInc());
 
         public final int ID;
-        private static int mStaticID = NORMAL.ID;
+        public static final TYPE[] M_LIST;
+        private static int mStaticTypeID = 0;
         private static HashMap<Integer, Integer> mMap;
-        private static TYPE[] mList;
 
         static {
             mMap = new HashMap<>();
-            mList = TYPE.values();
-            for (TYPE t : mList) {
+            M_LIST = TYPE.values();
+            for (TYPE t : M_LIST) {
                 mMap.put(t.ID, t.ordinal());
             }
         }
@@ -44,17 +44,17 @@ public class Message {
             setInc(i);
         }
 
-        public static int selfInc() {
-            return mStaticID + 1;
+        private static int selfInc() {
+            return mStaticTypeID + 1;
         }
 
-        public static void setInc(int id) {
-            assert (id > mStaticID);
-            mStaticID = id;
+        private static void setInc(int id) {
+            assert (id > mStaticTypeID);
+            mStaticTypeID = id;
         }
 
         public static TYPE getById(int id) {
-            return mList[mMap.get(id)];
+            return M_LIST[mMap.get(id)];
         }
     }
 

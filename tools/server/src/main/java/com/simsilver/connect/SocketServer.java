@@ -1,5 +1,7 @@
 package com.simsilver.connect;
 
+import com.simsilver.tools.Utils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,6 +10,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
 public class SocketServer {
@@ -27,7 +30,7 @@ public class SocketServer {
             while (true) {
                 // 一旦有堵塞, 则表示服务器与客户端获得了连接
                 Socket client = serverSocket.accept();
-                logger.debug("Server: socket in, hash {}", client.hashCode());
+                logger.debug("Server: socket {} in at {}", client.hashCode(), System.nanoTime());
                 // 处理这次连接
                 new HandlerThread(client);
             }
@@ -37,7 +40,16 @@ public class SocketServer {
     }
 
     public Message doMessage(Message in) {
-        return in.replyMsg(new byte[0]);
+        byte[] data;
+        switch (in.mType) {
+            case HEART_BEAT:
+                data = Calendar.getInstance().getTime().toString().getBytes();
+                break;
+            default:
+                data = Integer.toString(in.mData.length).getBytes();
+                break;
+        }
+        return in.replyMsg(data);
     }
 
     private class HandlerThread implements Runnable {
@@ -46,11 +58,12 @@ public class SocketServer {
         private DataOutputStream out;
         private final long waitTime = TimeUnit.SECONDS.toNanos(50);
         private long lastActiveTimeStamp;
+        private Thread mThreadThis;
 
         private boolean updateTimeStamp(boolean mark) {
             long now = System.nanoTime();
             if (now - lastActiveTimeStamp > waitTime) {
-                logger.warn("长连接超时 " + lastActiveTimeStamp + " " + now);
+                logger.warn("长连接超时 last stamp {} at {} ", lastActiveTimeStamp, now);
                 return false;
             }
             if (mark) {
@@ -67,7 +80,8 @@ public class SocketServer {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            new Thread(this).start();
+            mThreadThis = new Thread(this);
+            mThreadThis.start();
         }
 
         public void run() {
@@ -78,18 +92,19 @@ public class SocketServer {
                         Message msg = Message.obtainFromInputStream(in);
                         Message msg2 = doMessage(msg);
                         msg2.sendToOutputStream(out);
+                        updateTimeStamp(true);
                     }
-                    Thread.sleep(0);
+                    Thread.sleep(20);
                 }
             } catch (Exception e) {
-                logger.warn("服务器 run 异常: " + e.getMessage());
+                logger.warn("服务器 run 异常: {} ", Utils.getStackTrace(e));
             } finally {
                 if (socket != null) {
                     try {
                         socket.close();
                     } catch (Exception e) {
                         socket = null;
-                        logger.warn("服务端 finally 异常:" + e.getMessage());
+                        logger.warn("服务端 finally 异常: {}", Utils.getStackTrace(e));
                     }
                 }
             }

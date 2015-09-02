@@ -8,6 +8,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.rmi.server.ExportException;
@@ -139,5 +141,12 @@ public class Utils {
         byte[] data = byteArrayOutputStream.toByteArray();
         byteArrayOutputStream.close();
         return data;
+    }
+
+    public static String getStackTrace(Exception e) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        return sw.toString();
     }
 }
