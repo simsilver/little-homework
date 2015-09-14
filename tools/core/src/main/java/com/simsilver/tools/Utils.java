@@ -1,22 +1,19 @@
 package com.simsilver.tools;
 
-import com.sun.nio.zipfs.ZipFileSystem;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.rmi.server.ExportException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 /**
@@ -123,7 +120,7 @@ public class Utils {
         int size;
         if ((size = in.read(cache)) > 0) {
             totalSize -= size;
-            if(totalSize != 0) {
+            if (totalSize != 0) {
                 throw new IOException("read stream size unexpected");
             }
         }
@@ -148,5 +145,14 @@ public class Utils {
         PrintWriter pw = new PrintWriter(sw);
         e.printStackTrace(pw);
         return sw.toString();
+    }
+
+    /*
+     * "001,234,1234,568"
+     */
+    public static boolean findId(String id, String list) {
+        Pattern p = Pattern.compile("\\b"+ id + "\\b");
+        Matcher m = p.matcher(list);
+        return m.find();
     }
 }
