@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">android</string>
+
+    <string name="paintViewTitle">PaintView</string>
+    <string name="showPic">Show Picture</string>
+    <string name="clearPic">Clear Picture</string>
+</resources>

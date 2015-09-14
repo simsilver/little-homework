@@ -1,1 +1,1 @@
-include 'core', 'client', 'server'
+include ':core', ':client', ':server',':android'
