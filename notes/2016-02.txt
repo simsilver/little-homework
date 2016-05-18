@@ -1,0 +1,33 @@
+19: {text: '=== Android ListView 隐藏Divider平滑滚动并对齐 ===
+
+
+    当
+
+    - 使用ListView的smoothScrollToPositionFromTop方法
+
+    - 使用android:divider="@null"来隐藏divider
+
+
+
+    时，
+
+    如果在滚动过程中失去焦点，则重新获取焦点后item不能自动对齐，而不隐藏divider时则可自动对齐。
+
+
+
+    检查发现，自动对齐功能是间接通过ListView的shouldAdjustHeightForDivider方法来触发的，且知需要divider非空且高度不为0。
+
+
+
+    实际中尝试使用shape+stroke来绘制高为1的透明线不起作用，最后强制设置divider高度后正常
+
+
+    - ListView.smoothScrollToPositionFromTop
+
+    - android:divider="@color/transparent"
+
+    - android:dividerHeight="1dp"
+
+
+
+'}
